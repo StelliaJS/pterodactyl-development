@@ -4,8 +4,8 @@ This repository provides a `docker-compose` based environment for handling local
 **This is not meant for production use! This is a local development environment only.**
 
 > This environment is the official Pterodactyl development environment, in the sense that it is what
-I, [`@DaneEveritt`](https://github.com/DaneEveritt) use for working on it. I've not tested it on anything
-other than macOS, and I probably haven't documented most of the important bits. Please feel free to open
+I, [`@Biraru`](https://github.com/Biraru) use for working on it. I've not tested it on anything
+other than Windows + WSL, and I probably haven't documented most of the important bits. Please feel free to open
 PRs or Issues as necessary to improve this environment.
 
 ### Getting Started
