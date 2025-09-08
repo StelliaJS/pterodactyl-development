@@ -31,5 +31,5 @@ jobs:
           tags: |
             ghcr.io/birarustudios/development/wings:latest
             ghcr.io/birarustudios/development/wings:sha-${{ github.sha }}
-          cache-from: type=registry,ref=ghcr.io/birarustudios/development/wings:latest
-          cache-to: type=registry,mode=max,ref=ghcr.io/birarustudios/development/wings:latest
+          cache-from: type=registry,ref=ghcr.io/birarustudios/development/wings:buildcache
+          cache-to: type=registry,mode=max,ref=ghcr.io/birarustudios/development/wings:buildcache
