@@ -1,3 +1,3 @@
-create database if not exists panel_test;
-grant all on panel_test.* TO 'pterodactyl'@'%';
-flush privileges;
+CREATE DATABASE IF NOT EXISTS panel_test;
+GRANT ALL PRIVILEGES ON panel_test.* TO 'pterodactyl'@'%' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
