@@ -23,14 +23,8 @@ RUN apt update -y && apt install -y \
         nginx supervisor cron \
     && rm -rf /var/lib/apt/lists/*
 
-# Add external repositories (NodeJS, Yarn, PHP 8.3)
-RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key \
-        | gpg --dearmor -o /usr/share/keyrings/nodesource.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/nodesource.gpg] \
-        https://deb.nodesource.com/node_14.x $(lsb_release -sc) main" \
-        > /etc/apt/sources.list.d/nodesource.list \
-    \
-    && curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg \
+# Add external repositories (Yarn and PHP 8.3)
+RUN curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg \
         | gpg --dearmor -o /usr/share/keyrings/yarn-archive-keyring.gpg \
     && echo "deb [signed-by=/usr/share/keyrings/yarn-archive-keyring.gpg] \
         https://dl.yarnpkg.com/debian stable main" \
@@ -42,9 +36,17 @@ RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key \
         https://packages.sury.org/php/ $(lsb_release -sc) main" \
         > /etc/apt/sources.list.d/sury-php.list
 
-# Install NodeJS, Yarn, PHP 8.3, Composer
+# Install NVM and NodeJS
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash \
+    && export NVM_DIR="$HOME/.nvm" \
+    && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" \
+    && nvm install 14 \
+    && nvm use 14 \
+    && nvm alias default 14
+
+# Install Yarn, PHP 8.3 and Composer
 RUN apt update -y && apt upgrade -y && apt install -y \
-      nodejs yarn \
+      yarn \
       php8.3 php8.3-cli php8.3-common php8.3-gd \
       php8.3-mysql php8.3-mbstring php8.3-bcmath \
       php8.3-xml php8.3-fpm php8.3-curl php8.3-zip \
