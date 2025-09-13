@@ -1,45 +1,77 @@
 # Pterodactyl Development Environment
-This repository provides a `docker-compose` based environment for handling local development of Pterodactyl.
 
-**This is not meant for production use! This is a local development environment only.**
+This repository provides a `docker`-based local development environment for Pterodactyl.
 
-> This environment is the official Pterodactyl development environment, in the sense that it is what
-I, [`@Biraru`](https://github.com/Biraru) use for working on it. I've not tested it on anything
-other than Windows + WSL, and I probably haven't documented most of the important bits. Please feel free to open
-PRs or Issues as necessary to improve this environment.
+**⚠️ This environment is for local development only — it is not suitable for production.**
 
-### Getting Started
-You'll need the following things installed on your machine.
+> This is the official Pterodactyl development setup that the owner of this repo [`@Biraru`](https://github.com/Biraru) uses. It has been tested on an Ubuntu 24.04 VM running on Hyper-V. Some details might be missing, so contributions via PRs or Issues are welcome to improve documentation and functionality.
+
+---
+
+## Prerequisites
+
+Make sure the following tools are installed on your system:
 
 * [Docker](https://docker.io)
-* [Mutagen Compose](https://github.com/mutagen-io/mutagen-compose)
 * [mkcert](https://github.com/FiloSottile/mkcert)
 
-### Setup
-To begin clone this repository to your system, and then run `./setup.sh` which will configure the
-additional git repositories, and setup your local certificates and host file routing.
+---
 
-```sh
-git clone https://github.com/pterodactyl/development.git
+## Setup
+
+Clone this repository and run the setup script to configure dependencies, certificates, and host file routing:
+
+```bash
+git clone https://github.com/BiraruStudios/development.git
 cd development
 ./setup.sh
 ```
 
-#### What is Created
-* Traefik Container
-* Panel & Wings Containers
-* MySQL & Redis Containers
-* Minio Container for S3 emulation
+### What Gets Created
 
-### Accessing the Environment
-Once you've setup the environment, simply run `./beak up -d` to start the environment. This simply aliases
-some common Docker compose commands.
+* **Traefik** – reverse proxy
+* **Panel & Wings** – main Pterodactyl services
+* **MySQL & Redis** – database and cache
+* **Minio** – S3-compatible storage
 
-Once the environment is running, `./beak app` and `./beak wings` will allow SSH access to the Panel and
-Wings environments respectively. Your Panel is accessible at `https://pterodactyl.test`. You'll need to
-run through the normal setup process for the Panel if you do not have a database and environment setup
-already. This can be done by SSH'ing into the Panel environment and running `setup-pterodactyl`.
+---
 
-The code for the setup can be found in `build/panel/setup-pterodactyl`. Please note, this environment uses
-Mutagen for file handling, so replace calls to `docker compse up` or `down` with `mutagen-compose up` or `down`.
-All other `docker compose` commands can be used as normal.
+## Using the Environment
+
+Start the environment with:
+
+```bash
+./beak up -d
+```
+
+> `./beak` is a convenience wrapper for common Docker Compose commands.
+
+You can access the containers via SSH:
+
+```bash
+./beak app    # SSH into the Panel container
+./beak wings  # SSH into the Wings container
+```
+
+The web interfaces are available at:
+
+* **Panel:** `https://pterodactyl.test`
+* **Wings:** `https://wings.pterodactyl.test`
+
+### Initial Setup
+
+If you haven't configured a database or environment yet:
+
+* **Panel:** SSH into the Panel container and run:
+
+```bash
+setup-pterodactyl
+```
+
+* **Wings:** SSH into the Wings container and run:
+
+```bash
+setup-wings
+```
+
+This completes the local setup and gets everything running.
