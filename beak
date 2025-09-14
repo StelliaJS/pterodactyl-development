@@ -1,73 +1,59 @@
 #!/usr/bin/env bash
 
-# Load Panel environment variables
-# If the .env file exists in the panel code directory, source it so
-# any environment variables defined there are available to this script.
-if [ -f ./code/panel/.env ]; then
-  source ./code/panel/.env
-fi
-
-# Set user/group defaults for file permissions
-# WWWUSER: The user ID used inside the containers (default: current user)
-# WWWGROUP: The group ID used inside the containers (default: current group)
-export WWWUSER=${WWWUSER:-$UID}
-export WWWGROUP=${WWWGROUP:-$(id -g)}
-
-# Detect which Docker Compose binary to use
-# Prefer the new `docker compose` CLI if available, otherwise fallback to `docker-compose`
+# Detect whether the system uses the new `docker compose` subcommand (v2) 
 if docker compose &>/dev/null; then
     DOCKER_COMPOSE=(docker compose)
 else
     DOCKER_COMPOSE=(docker-compose)
 fi
 
-# Initialize arrays for dynamic command construction
-ARGS=() # Holds the final Docker Compose command arguments
-PEXEC=(exec -u pterodactyl app) # Base exec command for the Panel container
+# Initialize empty arrays for command arguments
+ARGS=()
+# Default exec command for the Panel container as the `pterodactyl` user
+PEXEC=(exec -u pterodactyl app)
 
-# Handle user commands
-# The first argument ($1) determines what action to perform:
-# - app: SSH into the Panel container
-# - wings: SSH into the Wings container
-# - artisan: Run Laravel artisan commands in the Panel container
-# - tinker: Open a Laravel tinker session
-# - serve: Start a frontend dev server via yarn
-# - any other command: passed directly to Docker Compose
-
+# Handle SSH into the Panel container
 if [ "$1" == "app" ]; then
+  # Source environment variables if the Panel .env file exists
+  if [ -f ./code/panel/.env ]; then
+    source ./code/panel/.env
+  fi
+
   shift 1
   CONTAINER_USER=pterodactyl
-  # If user specified 'root', override the default container user
+
+  # Allow overriding the container user to `root`
   if [ "$1" == "root" ]; then
     CONTAINER_USER=root
   fi
+
+  # Append the exec command for the Panel container
   ARGS+=(exec -u "$CONTAINER_USER" app bash)
 
+# Handle SSH into the Wings container
 elif [ "$1" == "wings" ]; then
   shift 1
-  # Directly exec into wings as root
-  "${DOCKER_COMPOSE[@]}" exec -u root wings bash
+  ARGS+=(exec -u root wings bash)
 
+# Handle running Laravel Artisan commands inside the Panel container
 elif [ "$1" == "artisan" ]; then
   shift 1
-  # Run Laravel artisan command inside the Panel container
   ARGS+=("${PEXEC[@]}" php artisan "$@")
 
+# Handle launching Laravel Tinker REPL inside the Panel container
 elif [ "$1" == "tinker" ]; then
   shift 1
-  # Open a Laravel tinker REPL session
   ARGS+=("${PEXEC[@]}" php artisan tinker)
 
+# Handle starting the development server inside the Panel container
 elif [ "$1" == "serve" ]; then
   shift 1
-  # Run frontend dev server (Webpack/Vue/React) via yarn
   ARGS+=("${PEXEC[@]}" yarn run serve "$@")
 
+# Handle all other commands (pass through directly)
 else
-  # Pass any unknown commands directly to Docker Compose
   ARGS+=("$@")
 fi
 
-# Execute the final command
-# Run the constructed Docker Compose command with all the arguments
+# Execute the final docker compose command with the built arguments
 "${DOCKER_COMPOSE[@]}" "${ARGS[@]}"
