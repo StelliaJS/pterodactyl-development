@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+# Environment variables
+WINGS_PATH="/home/root/wings"
+
+# Set working directory
+cd "$WINGS_PATH" || exit 1
+
+# Build
+go build
+
+# LN the built binary
+ln -sf "$WINGS_PATH/wings" /usr/local/sbin/wings
+
+# Restart Wings service
+supervisorctl restart wings
