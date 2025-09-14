@@ -6,31 +6,28 @@ FROM debian:bookworm-slim
 
 # Metadata
 LABEL maintainer="biraru@biraru.org" \
-      description="Local development environment for Pterodactyl Wings" \
-      org.opencontainers.image.source="https://github.com/BiraruStudios/development"
+    description="Local development environment for Pterodactyl Wings" \
+    org.opencontainers.image.source="https://github.com/BiraruStudios/development"
 
 # Environment variables
 ENV DEBIAN_FRONTEND=noninteractive \
-        LANG=C.UTF-8 \
-        GOBIN=/usr/local/go/bin \
-        PATH=$PATH:/usr/local/go/bin
+    LANG=C.UTF-8 \
+    GOBIN=/usr/local/go/bin \
+    PATH=$PATH:/usr/local/go/bin
 
+# Set user as root
 USER root
 
-# Install essential system utilities for dev
+# Install system dependencies
 RUN apt -y update && apt -y install \
-        git curl sudo nano tar zip unzip \
-        make gcc g++ gdb python3 python3-pip python-is-python3 \
-        iputils-ping iproute2 net-tools software-properties-common gnupg2 \
+    git curl sudo nano tar zip unzip \
+    make gcc g++ gdb python3 python3-pip python-is-python3 \
+    iputils-ping iproute2 net-tools software-properties-common gnupg2 \
+    supervisor \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Docker CE for container management
-RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] \
-        https://download.docker.com/linux/debian $(lsb_release -cs) stable" \
-        | tee /etc/apt/sources.list.d/docker.list > /dev/null \
-    && apt -y update \
-    && apt -y --no-install-recommends install docker-ce docker-ce-cli containerd.io \
+RUN curl -sSL https://get.docker.com/ | CHANNEL=stable bash \
     && usermod -aG docker root
 
 # Install Go 1.24.1 for building Wings and Go tooling
