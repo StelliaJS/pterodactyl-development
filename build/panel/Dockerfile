@@ -75,8 +75,8 @@ RUN useradd -m pterodactyl \
     && phpdismod -s cli xdebug \
     && mkdir -p /var/www/html \
     && (crontab -l 2>/dev/null; \
-        echo "* * * * * php /var/www/html/artisan schedule:run >/dev/null 2>&1") \
-        | crontab -
+    echo "* * * * * php /var/www/html/artisan schedule:run >/dev/null 2>&1") \
+    | crontab -
 
 # Set working directory for Panel
 WORKDIR /var/www/html
@@ -84,4 +84,5 @@ WORKDIR /var/www/html
 # Expose ports used by Panel
 EXPOSE 80 8080
 
+# Run entrypoint script
 ENTRYPOINT ["entrypoint"]

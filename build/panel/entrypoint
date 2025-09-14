@@ -3,13 +3,15 @@ set -x
 set -e
 set -o pipefail
 
+# Environment variables
+PHP_VERSION=8.3
+
 # Update pterodactyl user UID if WWWUSER is set
 if [ -n "$WWWUSER" ]; then
   usermod -u "$WWWUSER" pterodactyl
 fi
 
 # Enable all available PHP modules for CLI and FPM
-PHP_VERSION=8.3
 if [ -d "/etc/php/mods-available" ]; then
   # Link CLI mods
   if [ -d "/etc/php/mods-available/cli" ]; then
@@ -35,10 +37,12 @@ if [ -d "/etc/certs" ]; then
   update-ca-certificates
 fi
 
-# Set permissions for Laravel directories
+# Set working directory
 cd /var/www/html || exit 1
+
+# Set permissions for Laravel directories
 chown -R pterodactyl:www-data storage bootstrap/cache
-chmod -R 777 storage/* bootstrap/cache
+chmod -R 775 storage bootstrap/cache
 
 # Start shell or services
 if [ $# -gt 0 ]; then
