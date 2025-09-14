@@ -1,5 +1,6 @@
 services:
   traefik:
+    container_name: traefik
     image: traefik:2.11.29
     restart: always
     networks:
@@ -31,6 +32,7 @@ services:
     security_opt:
       - no-new-privileges=true
   app:
+    container_name: app
     image: ghcr.io/birarustudios/development/panel:latest
     #build:
     #  context: ./build/panel
@@ -44,22 +46,8 @@ services:
       - ./code/panel:/var/www/html
       - ./docker/certificates:/etc/certs:ro
       - ./docker/php:/etc/php/mods-available:ro
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.app.tls=true"
-      - "traefik.http.routers.app.rule=Host(`pterodactyl.test`)"
-      - "traefik.http.routers.app.entrypoints=https"
-      - "traefik.http.routers.app.service=app"
-      - "traefik.http.services.app.loadbalancer.server.port=80"
-      - "traefik.http.routers.webpack-dev-server.tls=true"
-      - "traefik.http.routers.webpack-dev-server.rule=Host(`pterodactyl.test`) && PathPrefix(`/webpack@hmr`, `/sockjs-node`)"
-      - "traefik.http.routers.webpack-dev-server.entrypoints=https"
-      - "traefik.http.routers.webpack-dev-server.service=webpack-dev-server"
-      - "traefik.http.services.webpack-dev-server.loadbalancer.server.port=8080"
     environment:
       TZ: ${TZ:-UTC}
-      WWWUSER: ${WWWUSER:-$$(id -u)}
-      WWWGROUP: ${WWWGROUP:-$$(id -g)}
       APP_URL: https://pterodactyl.test
       DB_HOST: mysql
       REDIS_HOST: redis
@@ -67,45 +55,65 @@ services:
       DB_PASSWORD: pterodactyl
       SESSION_DRIVER: redis
       CACHE_DRIVER: redis
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.app.rule=Host(`pterodactyl.test`)"
+      - "traefik.http.routers.app.entrypoints=https"
+      - "traefik.http.routers.app.tls=true"
+      - "traefik.http.routers.app.service=app"
+      - "traefik.http.services.app.loadbalancer.server.port=80"
+      - "traefik.http.routers.app-dev.rule=Host(`pterodactyl.test`) && PathPrefix(`/webpack@hmr`, `/sockjs-node`)"
+      - "traefik.http.routers.app-dev.entrypoints=https"
+      - "traefik.http.routers.app-dev.tls=true"
+      - "traefik.http.routers.app-dev.service=app-dev"
+      - "traefik.http.services.app-dev.loadbalancer.server.port=8080"
   wings:
+    container_name: wings
     image: ghcr.io/birarustudios/development/wings:latest
     #build:
     #  context: ./build/wings
     #  dockerfile: Dockerfile
     stop_grace_period: '1s'
-    tty: true
-    stdin_open: true
     networks:
-      - pterodactyl
+      pterodactyl:
+        aliases:
+          - wings.pterodactyl.test
     ports:
       - "2022:2022"
     volumes:
       - ./code/wings:/home/root/wings
-      - go_modules:/root/go
+      - ./code/wings/go_modules:/root/go
+      - ./build/wings/configs/wings.conf:/etc/pterodactyl/config.yml
+      - ./docker/certificates:/etc/certs:ro
       - /tmp/pterodactyl:/tmp/pterodactyl
       - /var/lib/pterodactyl:/var/lib/pterodactyl
       - /var/run/docker.sock:/var/run/docker.sock:ro
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.wings.tls=true"
+      - "traefik.http.routers.wings.service=wings"
       - "traefik.http.routers.wings.rule=Host(`wings.pterodactyl.test`)"
       - "traefik.http.routers.wings.entrypoints=https"
-      - "traefik.http.services.wings.loadbalancer.server.port=8080"
+      - "traefik.http.services.wings.loadbalancer.server.port=443"
+      - "traefik.http.routers.wings-http.rule=Host(`wings.pterodactyl.test`)"
+      - "traefik.http.routers.wings-http.service=wings"
+      - "traefik.http.routers.wings-http.entrypoints=http"
+      - "traefik.http.routers.wings-http.middlewares=https-redirect"
     cap_add:
       - SYS_ADMIN
     devices:
       - /dev/loop0
       - /dev/loop-control
+    tty: true
+    stdin_open: true
   mysql:
-    image: mariadb:10.7
+    container_name: mysql
+    image: mariadb:10.11.14
     restart: unless-stopped
+    networks:
+      - pterodactyl
     ports:
       - "3306:3306"
-    command:
-      - --innodb-buffer-pool-size=1G
-      - --innodb-log-file-size=256M
-      - --innodb-flush-log-at-trx-commit=0
-      - --lower-case-table-names=1
     volumes:
       - mysql:/var/lib/mysql
       - ./docker/mysql:/docker-entrypoint-initdb.d:ro
@@ -114,46 +122,54 @@ services:
       MYSQL_DATABASE: panel
       MYSQL_USER: pterodactyl
       MYSQL_PASSWORD: pterodactyl
-    networks:
-      - pterodactyl
+    command:
+      - --innodb-buffer-pool-size=1G
+      - --innodb-log-file-size=256M
+      - --innodb-flush-log-at-trx-commit=0
+      - --lower-case-table-names=1
   redis:
+    container_name: redis
     image: redis:alpine
     restart: unless-stopped
     networks:
       - pterodactyl
   minio:
+    container_name: minio
     image: minio/minio:RELEASE.2022-02-05T04-40-59Z
     restart: unless-stopped
-    command: server --console-address ":9001" /var/lib/minio
-    environment:
-      MINIO_ROOT_USER: minio
-      MINIO_ROOT_PASSWORD: password
-    expose:
-      - 9000
-      - 9001
     networks:
       pterodactyl:
         aliases:
+          - minio.pterodactyl.test
           - s3.minio.pterodactyl.test
+    ports:
+      - "9000:9000"
+      - "9001:9001"
     volumes:
       - minio:/var/lib/minio
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: password
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.minio.tls=true"
-      - "traefik.http.routers.minio.rule=Host(`s3.minio.pterodactyl.test`)"
-      - "traefik.http.routers.minio.entrypoints=https"
-      - "traefik.http.routers.minio.service=minio"
       - "traefik.http.routers.minio-console.tls=true"
       - "traefik.http.routers.minio-console.rule=Host(`minio.pterodactyl.test`)"
       - "traefik.http.routers.minio-console.entrypoints=https"
       - "traefik.http.routers.minio-console.service=minio-console"
-      - "traefik.http.services.minio.loadbalancer.server.port=9000"
       - "traefik.http.services.minio-console.loadbalancer.server.port=9001"
-
+      - "traefik.http.routers.minio.tls=true"
+      - "traefik.http.routers.minio.rule=Host(`s3.minio.pterodactyl.test`)"
+      - "traefik.http.routers.minio.entrypoints=https"
+      - "traefik.http.routers.minio.service=minio"
+      - "traefik.http.services.minio.loadbalancer.server.port=9000"
+    command: server --console-address ":9001" /var/lib/minio
 networks:
   pterodactyl:
+    name: pterodactyl
     driver: bridge
-
+    ipam:
+      config:
+        - subnet: 10.55.0.0/16
 volumes:
   mysql:
     driver: local
