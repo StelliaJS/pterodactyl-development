@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -x
+set -e
+set -o pipefail
+
+# Environment variables
+WINGS_PATH="/home/root/wings"
+
+# Set working directory
+cd "$WINGS_PATH" || exit 1
+
+# Auto install Wings if already built
+if [ -f "wings" ]; then
+    ln -sf "$WINGS_PATH/wings" /usr/local/sbin/wings
+fi
+
+# Install custom certificates if provided
+if [ -d "/etc/certs" ]; then
+  mkdir -p /usr/local/share/ca-certificates/mkcert
+  cp /etc/certs/root_ca.pem /usr/local/share/ca-certificates/root_ca.crt
+  cp /etc/certs/pterodactyl*.pem /usr/local/share/ca-certificates/mkcert/
+  update-ca-certificates
+fi
+
+# Start shell or supervisor
+if [ $# -gt 0 ]; then
+  sudo su -l root -c "/bin/bash"
+else
+  /usr/bin/supervisord -c /etc/supervisord.conf -n
+fi

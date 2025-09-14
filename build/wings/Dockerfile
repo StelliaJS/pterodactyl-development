@@ -39,8 +39,21 @@ RUN curl -OL "https://go.dev/dl/go1.24.1.linux-$(dpkg --print-architecture).tar.
 # Install Delve debugger for Go
 RUN /usr/local/go/bin/go install github.com/go-delve/delve/cmd/dlv@latest
 
+# Copy scripts and config
+COPY entrypoint               /usr/local/bin/entrypoint
+COPY build-wings              /usr/local/bin/build-wings
+COPY configs/supervisord.conf /etc/supervisord.conf
+
+# User setup and permissions
+RUN chmod +x /usr/local/bin/build-wings \
+    && chmod +x /usr/local/bin/entrypoint \
+    && ln -s /usr/local/bin/build-wings /usr/local/bin/setup-wings
+
 # Set working directory for Wings
 WORKDIR /home/root/wings
 
 # Expose ports used by Wings
 EXPOSE 8080 2022
+
+# Run entrypoint script
+ENTRYPOINT ["entrypoint"]
