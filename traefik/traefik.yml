@@ -8,6 +8,8 @@ entryPoints:
     address: ":80"
   https:
     address: ":443"
+  wings:
+    address: ":8080"
 providers:
   file:
     filename: /etc/traefik/dynamic.yml

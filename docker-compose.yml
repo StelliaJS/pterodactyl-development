@@ -7,13 +7,14 @@ services:
       pterodactyl:
         aliases:
           - pterodactyl.test
-          - traefik.pterodactyl.tests
+          - traefik.pterodactyl.test
           - wings.pterodactyl.test
           - minio.pterodactyl.test
           - s3.minio.pterodactyl.test
     ports:
       - "80:80"
       - "443:443"
+      - "8080:8080"
     volumes:
       - ./traefik:/etc/traefik:ro
       - ./docker/certificates:/etc/certs:ro
@@ -90,15 +91,17 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.wings.tls=true"
-      - "traefik.http.routers.wings.service=wings"
       - "traefik.http.routers.wings.rule=Host(`wings.pterodactyl.test`)"
-      - "traefik.http.routers.wings.entrypoints=https"
-      - "traefik.http.services.wings.loadbalancer.server.port=443"
+      - "traefik.http.routers.wings.service=wings"
+      - "traefik.http.routers.wings.entrypoints=wings"
+      - "traefik.http.routers.wings.tls=true"
+      - "traefik.http.services.wings.loadbalancer.server.port=8080"
       - "traefik.http.routers.wings-http.rule=Host(`wings.pterodactyl.test`)"
       - "traefik.http.routers.wings-http.service=wings"
       - "traefik.http.routers.wings-http.entrypoints=http"
-      - "traefik.http.routers.wings-http.middlewares=https-redirect"
+      - "traefik.http.routers.wings-http.middlewares=wings-redirect"
+      - "traefik.http.middlewares.wings-redirect.redirectregex.regex=^http://wings\\.pterodactyl\\.test/(.*)"
+      - "traefik.http.middlewares.wings-redirect.redirectregex.replacement=https://wings.pterodactyl.test:8080/$${1}"
     cap_add:
       - SYS_ADMIN
     devices:
