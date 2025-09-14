@@ -1,30 +1,40 @@
-version: '3.8'
-
 services:
   traefik:
-    image: traefik:2.6
+    image: traefik:2.11.29
     restart: always
     networks:
       pterodactyl:
         aliases:
           - pterodactyl.test
+          - traefik.pterodactyl.tests
+          - wings.pterodactyl.test
           - minio.pterodactyl.test
           - s3.minio.pterodactyl.test
-          - wings.pterodactyl.test
     ports:
+      - "80:80"
       - "443:443"
-      - "8080:8080"
-    security_opt:
-      - no-new-privileges=true
     volumes:
       - ./traefik:/etc/traefik:ro
       - ./docker/certificates:/etc/certs:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.pterodactyl.test`)"
+      - "traefik.http.routers.traefik-dashboard.entrypoints=https"
+      - "traefik.http.routers.traefik-dashboard.service=api@internal"
+      - "traefik.http.routers.traefik-dashboard.tls=true"
+      - "traefik.http.routers.traefik-dashboard-http.rule=Host(`traefik.pterodactyl.test`)"
+      - "traefik.http.routers.traefik-dashboard-http.entrypoints=http"
+      - "traefik.http.routers.traefik-dashboard-http.service=api@internal"
+      - "traefik.http.routers.traefik-dashboard-http.middlewares=https-redirect"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+    security_opt:
+      - no-new-privileges=true
   app:
-    image: ghcr.io/pterodactyl/development/panel:latest
-    # build:
-    #   context: ./build/panel
-    #   dockerfile: Dockerfile
+    image: ghcr.io/birarustudios/development/panel:latest
+    #build:
+    #  context: ./build/panel
+    #  dockerfile: Dockerfile
     stop_grace_period: '1s'
     networks:
       pterodactyl:
@@ -58,10 +68,10 @@ services:
       SESSION_DRIVER: redis
       CACHE_DRIVER: redis
   wings:
-    image: ghcr.io/pterodactyl/development/wings:latest
-    # build:
-    #   context: ./build/wings
-    #   dockerfile: Dockerfile
+    image: ghcr.io/birarustudios/development/wings:latest
+    #build:
+    #  context: ./build/wings
+    #  dockerfile: Dockerfile
     stop_grace_period: '1s'
     tty: true
     stdin_open: true

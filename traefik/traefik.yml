@@ -1,9 +1,11 @@
 global:
   sendAnonymousUsage: false
 api:
-  insecure: true
+  insecure: false
   dashboard: true
 entryPoints:
+  http:
+    address: ":80"
   https:
     address: ":443"
 providers:
