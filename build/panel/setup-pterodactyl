@@ -23,7 +23,10 @@ fi
 # Install project dependencies
 yarn install --no-progress
 
-# Allow HMR (Hot Module Reloading) by serving instead of building
+# Build
+yarn run build
+
+# Allow HMR (Hot Module Reloading) by serving
 nohup yarn run serve > /var/log/yarn-serve.log 2>&1 &
 
 # Restart cron, nginx, and PHP-FPM
