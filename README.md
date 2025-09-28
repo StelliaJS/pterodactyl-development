@@ -121,5 +121,9 @@ Set `REDIS_HOST` to `REDIS_HOST=redis`
 
 ## Complete installation with Pterodactyl.io Documentation
 [Final steps with Database setup + first user](https://pterodactyl.io/panel/1.0/getting_started.html#installation)
+Connection to the DB from panel: 
+```bash
+mariadb -u root -p
+```
 
 This completes the local setup and gets everything running.
