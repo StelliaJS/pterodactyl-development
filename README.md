@@ -112,8 +112,11 @@ nano .env
 ```
 
 Set `APP_URL` to `APP_URL=https://pterodactyl.test/`
+
 Set `DB_HOST` to `DB_HOST=mysql`
+
 Set `DB_PASSWORD` to `DB_PASSWORD=pterodactyl`
+
 Set `REDIS_HOST` to `REDIS_HOST=redis`
 
 ## Complete installation with Pterodactyl.io Documentation
