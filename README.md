@@ -12,8 +12,8 @@ This repository provides a `docker`-based local development environment for Pter
 
 Make sure the following tools are installed on your system:
 
-* [Docker](https://docker.io)
-* [mkcert](https://github.com/FiloSottile/mkcert)
+* [Docker](https://docker.io) - [Installation link for Debian](https://docs.docker.com/engine/install/debian/#install-using-the-repository)
+* [mkcert](https://github.com/FiloSottile/mkcert) - [Installation link for Debian](https://github.com/FiloSottile/mkcert?tab=readme-ov-file#linux) - [Installation of HomeBrew](https://brew.sh/) - [Set command](https://docs.brew.sh/Homebrew-on-Linux)
 
 ---
 
