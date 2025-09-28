@@ -92,4 +92,17 @@ File: `C:\Windows\System32\drivers\etc\hosts`
 127.0.0.1 minio.pterodactyl.test
 127.0.0.1 s3.minio.pterodactyl.test
 ```
+
+## Fix permissions in panel:
+```bash
+./beak app
+```
+
+```bash
+sudo chown -R www-data:www-data storage bootstrap/cache
+```
+
+```bash
+sudo chmod -R 775 storage bootstrap/cache
+```
 This completes the local setup and gets everything running.
