@@ -99,10 +99,24 @@ File: `C:\Windows\System32\drivers\etc\hosts`
 ```
 
 ```bash
-sudo chown -R www-data:www-data storage bootstrap/cache
+sudo chmod -R 755 storage/* bootstrap/cache/
+```
+
+## Update `.env`
+```bash
+./beak app
 ```
 
 ```bash
-sudo chmod -R 775 storage bootstrap/cache
+nano .env
 ```
+
+Set `APP_URL` to `APP_URL=https://pterodactyl.test/`
+Set `DB_HOST` to `DB_HOST=mysql`
+Set `DB_PASSWORD` to `DB_PASSWORD=pterodactyl`
+Set `REDIS_HOST` to `REDIS_HOST=redis`
+
+## Complete installation with Pterodactyl.io Documentation
+[Final steps with Database setup + first user](https://pterodactyl.io/panel/1.0/getting_started.html#installation)
+
 This completes the local setup and gets everything running.
