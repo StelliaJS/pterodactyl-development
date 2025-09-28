@@ -22,8 +22,8 @@ Make sure the following tools are installed on your system:
 Clone this repository and run the setup script to configure dependencies, certificates, and host file routing:
 
 ```bash
-git clone https://github.com/BiraruStudios/development.git
-cd development
+git clone https://github.com/StelliaJS/pterodactyl-development
+cd pterodactyl-development/
 ./setup.sh
 ```
 
@@ -35,6 +35,15 @@ cd development
 * **Minio** – S3-compatible storage
 
 ---
+
+## Add Docker group
+```bash
+sudo groupadd docker
+```
+
+```bash
+sudo usermod -aG docker $USER
+```
 
 ## Using the Environment
 
@@ -74,4 +83,13 @@ setup-pterodactyl
 setup-wings
 ```
 
+## Update local Windows `hosts` file:
+
+File: `C:\Windows\System32\drivers\etc\hosts`
+```
+127.0.0.1 pterodactyl.test
+127.0.0.1 wings.pterodactyl.test
+127.0.0.1 minio.pterodactyl.test
+127.0.0.1 s3.minio.pterodactyl.test
+```
 This completes the local setup and gets everything running.
